@@ -38,6 +38,8 @@ def generate_pair_of_matrices(a_rows_b_columns,
 
 if __name__ == '__main__':
   import argparse
+  import random
+  import json
   parser = argparse.ArgumentParser(description='Generates two matrices of '
                                                'random values with the size '
                                                'provided. The row size of '
@@ -67,7 +69,14 @@ if __name__ == '__main__':
   matrix_a, matrix_b = generate_pair_of_matrices(args.a_rows_b_columns,
                                                  args.a_columns_b_rows,
                                                  args.random_values_max_range)
-  print('Matrix A: ')
-  print(matrix_a)
-  print('Matrix B: ')
-  print(matrix_b)
+  matrices = {'Matrix_A': matrix_a,
+              'Matrix_B': matrix_b}
+  ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  digits = '0123456789'
+  for matrix in matrices:
+    file_name = ''.join(random.choice(ascii_uppercase + digits)
+                        for x in range(32))
+    file_location_and_name = '{}/{}.asc'.format(args.output_directory,
+                                                file_name)
+    with open(file_location_and_name, 'w') as matrix_write:
+      json.dump(matrices[matrix], matrix_write)
