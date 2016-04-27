@@ -37,7 +37,36 @@ def generate_pair_of_matrices(a_rows_b_columns,
 
 
 if __name__ == '__main__':
-  matrix_a, matrix_b = generate_pair_of_matrices(4, 2, 10)
+  import argparse
+  parser = argparse.ArgumentParser(description='Generates two matrices of '
+                                               'random values with the size '
+                                               'provided. The row size of '
+                                               'matrix A will be the column '
+                                               'size of matrix B and the '
+                                               'column size of matrix A will '
+                                               'be the row size of matrix B. '
+                                               'The random values will be in '
+                                               'the range from 0 to the max'
+                                               'range value provided.')
+  parser.add_argument('a_rows_b_columns',
+                      type=int,
+                      help='Matrix size of rows for matrix A and columns for '
+                           'matrix B.')
+  parser.add_argument('a_columns_b_rows',
+                      type=int,
+                      help='Matrix size of columns for matrix A and rows for '
+                           'matrix B.')
+  parser.add_argument('random_values_max_range',
+                      type=float,
+                      help='Max range values for the random values populated '
+                           'into the matrices.')
+  parser.add_argument('output_directory',
+                      type=str,
+                      help='Directory to write the two output matrix files.')
+  args = parser.parse_args()
+  matrix_a, matrix_b = generate_pair_of_matrices(args.a_rows_b_columns,
+                                                 args.a_columns_b_rows,
+                                                 args.random_values_max_range)
   print('Matrix A: ')
   print(matrix_a)
   print('Matrix B: ')
