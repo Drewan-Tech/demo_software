@@ -38,9 +38,10 @@ def generate_pair_of_matrices(a_rows_b_columns,
 
 if __name__ == '__main__':
   import argparse
-  import random
   import json
   from drewantech_common.value_checks import valid_directory
+  from drewantech_common.string_generator \
+      import generate_32_character_random_string
   parser = argparse.ArgumentParser(description='Generates two matrices of '
                                                'random values with the size '
                                                'provided. The row size of '
@@ -72,12 +73,9 @@ if __name__ == '__main__':
                                                  args.random_values_max_range)
   matrices = {'Matrix_A': matrix_a,
               'Matrix_B': matrix_b}
-  ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  digits = '0123456789'
   for matrix in matrices:
-    file_name = ''.join(random.choice(ascii_uppercase + digits)
-                        for x in range(32))
-    file_location_and_name = '{}/{}.asc'.format(args.output_directory,
-                                                file_name)
+    file_location_and_name = ('{}/{}.asc'
+                              .format(args.output_directory,
+                                      generate_32_character_random_string()))
     with open(file_location_and_name, 'w') as matrix_write:
       json.dump(matrices[matrix], matrix_write)
