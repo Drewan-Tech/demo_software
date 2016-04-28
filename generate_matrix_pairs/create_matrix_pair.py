@@ -40,6 +40,7 @@ if __name__ == '__main__':
   import argparse
   import random
   import json
+  import os
   parser = argparse.ArgumentParser(description='Generates two matrices of '
                                                'random values with the size '
                                                'provided. The row size of '
@@ -66,6 +67,10 @@ if __name__ == '__main__':
                       type=str,
                       help='Directory to write the two output matrix files.')
   args = parser.parse_args()
+  if not os.path.isdir(args.output_directory):
+    raise OSError('The output directory, {}, provided to '
+                  'create_matrix_pair.py is not valid.'
+                  .format(args.output_directory))
   matrix_a, matrix_b = generate_pair_of_matrices(args.a_rows_b_columns,
                                                  args.a_columns_b_rows,
                                                  args.random_values_max_range)
