@@ -48,7 +48,9 @@ class GeneratedFile(Base):
 class OperatingOn(Base):
   __tablename__ = 'operating_on'
   operator_id = Column(Integer, ForeignKey('job.id'), primary_key=True)
-  operand_id = Column(Integer, ForeignKey('job.id'))
+  operand_id = Column(Integer,
+                      ForeignKey('job.id'),
+                      CheckConstraint('operand_id != operator_id'))
   operator = relationship('Job', foreign_keys=[operator_id])
   operand = relationship('Job', foreign_keys=[operand_id])
 
