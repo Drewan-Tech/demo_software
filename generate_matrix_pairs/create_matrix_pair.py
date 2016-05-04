@@ -37,45 +37,60 @@ def generate_pair_of_matrices(a_rows_b_columns,
 
 
 if __name__ == '__main__':
-  import argparse
-  import json
-  from drewantech_common.value_checks import valid_directory
-  from drewantech_common.string_generator \
-      import generate_32_character_random_string
-  parser = argparse.ArgumentParser(description='Generates two matrices of '
-                                               'random values with the size '
-                                               'provided. The row size of '
-                                               'matrix A will be the column '
-                                               'size of matrix B and the '
-                                               'column size of matrix A will '
-                                               'be the row size of matrix B. '
-                                               'The random values will be in '
-                                               'the range from 0 to the max'
-                                               'range value provided.')
-  parser.add_argument('a_rows_b_columns',
-                      type=int,
-                      help='Matrix size of rows for matrix A and columns for '
-                           'matrix B.')
-  parser.add_argument('a_columns_b_rows',
-                      type=int,
-                      help='Matrix size of columns for matrix A and rows for '
-                           'matrix B.')
-  parser.add_argument('random_values_max_range',
-                      type=float,
-                      help='Max range values for the random values populated '
-                           'into the matrices.')
-  parser.add_argument('output_directory',
-                      type=valid_directory,
-                      help='Directory to write the two output matrix files.')
-  args = parser.parse_args()
-  matrix_a, matrix_b = generate_pair_of_matrices(args.a_rows_b_columns,
-                                                 args.a_columns_b_rows,
-                                                 args.random_values_max_range)
-  matrices = {'Matrix_A': matrix_a,
-              'Matrix_B': matrix_b}
-  for matrix in matrices:
-    file_location_and_name = ('{}/{}.asc'
-                              .format(args.output_directory,
-                                      generate_32_character_random_string()))
-    with open(file_location_and_name, 'w') as matrix_write:
-      json.dump(matrices[matrix], matrix_write)
+  import sys
+  try:
+    import argparse
+    import json
+    from drewantech_common.value_checks import valid_directory
+    from drewantech_common.string_generator \
+        import generate_32_character_random_string
+    import os
+    parser = argparse.ArgumentParser(description='Generates two matrices of '
+                                                 'random values with the size '
+                                                 'provided. The row size of '
+                                                 'matrix A will be the column '
+                                                 'size of matrix B and the '
+                                                 'column size of matrix A '
+                                                 'will be the row size of '
+                                                 'matrix B. The random values '
+                                                 'will be in the range from '
+                                                 '0 to the max range value '
+                                                 'provided.')
+    parser.add_argument('a_rows_b_columns',
+                        type=int,
+                        help='Matrix size of rows for matrix A and columns '
+                             'for matrix B.')
+    parser.add_argument('a_columns_b_rows',
+                        type=int,
+                        help='Matrix size of columns for matrix A and rows '
+                             'for matrix B.')
+    parser.add_argument('random_values_max_range',
+                        type=float,
+                        help='Max range values for the random values '
+                             'populated into the matrices.')
+    parser.add_argument('output_directory',
+                        type=valid_directory,
+                        help='Directory to write the two output matrix files.')
+    args = parser.parse_args()
+    instance_id = generate_32_character_random_string()
+    module_name = (os.path.basename(__file__).rstrip('.py'))
+    matrix_a, matrix_b = generate_pair_of_matrices(args
+                                                   .a_rows_b_columns,
+                                                   args
+                                                   .a_columns_b_rows,
+                                                   args
+                                                   .random_values_max_range)
+    matrices = {'Matrix_A': matrix_a,
+                'Matrix_B': matrix_b}
+    for matrix in matrices:
+      file_location_and_name = ('{}/{}_{}_{}.asc'
+                                .format(args.output_directory,
+                                        instance_id,
+                                        module_name,
+                                        matrix))
+      with open(file_location_and_name, 'w') as matrix_write:
+        json.dump(matrices[matrix], matrix_write)
+    sys.exit(0)
+  except Exception as e:
+    print(e)
+    sys.exit(1)
