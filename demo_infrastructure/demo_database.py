@@ -30,7 +30,7 @@ Base = declarative_base()
 
 class Job(Base):
   __tablename__ = 'job'
-  id = Column(Integer, primary_key=True)
+  id = Column(String(32), primary_key=True)
   producer = Column(String)
   producer_id = Column(String)
   is_finished = Column(Boolean)
@@ -41,14 +41,14 @@ class Job(Base):
 class GeneratedFile(Base):
   __tablename__ = 'generated_file'
   file_name = Column(String, primary_key=True)
-  job_id = Column(Integer, ForeignKey('job.id'))
+  job_id = Column(String(32), ForeignKey('job.id'))
   job = relationship('Job', back_populates='generated_files')
 
 
 class OperatingOn(Base):
   __tablename__ = 'operating_on'
-  operator_id = Column(Integer, ForeignKey('job.id'), primary_key=True)
-  operand_id = Column(Integer,
+  operator_id = Column(String(32), ForeignKey('job.id'), primary_key=True)
+  operand_id = Column(String(32),
                       ForeignKey('job.id'),
                       CheckConstraint('operand_id != operator_id'))
   operator = relationship('Job', foreign_keys=[operator_id])
