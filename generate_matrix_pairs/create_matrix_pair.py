@@ -102,6 +102,10 @@ if __name__ == '__main__':
                                   job_id=instance_id))
         with open(file_location_and_name, 'w') as matrix_write:
           json.dump(matrices[matrix], matrix_write)
+    with (database_transaction(db_connection
+          .connect_to_database(database_name))) as session:
+      job = session.query(Job).filter_by(id=instance_id).one()
+      job.is_finished = True
     sys.exit(0)
   except Exception as e:
     print(e)
