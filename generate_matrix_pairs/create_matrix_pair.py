@@ -45,6 +45,11 @@ if __name__ == '__main__':
     from drewantech_common.string_generator \
         import generate_32_character_random_string
     import os
+    from demo_infrastructure.demo_database import (db_connection,
+                                                   database_name,
+                                                   Job,
+                                                   GeneratedFile)
+    from drewantech_common.database_operations import database_transaction
     parser = argparse.ArgumentParser(description='Generates two matrices of '
                                                  'random values with the size '
                                                  'provided. The row size of '
@@ -74,6 +79,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     instance_id = generate_32_character_random_string()
     module_name = (os.path.basename(__file__).rstrip('.py'))
+    with (database_transaction(db_connection
+          .connect_to_database(database_name))) as session:
+      session.add(Job(id=instance_id, producer=module_name, is_finished=False))
     matrix_a, matrix_b = generate_pair_of_matrices(args
                                                    .a_rows_b_columns,
                                                    args
@@ -82,14 +90,18 @@ if __name__ == '__main__':
                                                    .random_values_max_range)
     matrices = {'Matrix_A': matrix_a,
                 'Matrix_B': matrix_b}
-    for matrix in matrices:
-      file_location_and_name = ('{}/{}_{}_{}.asc'
-                                .format(args.output_directory,
-                                        instance_id,
-                                        module_name,
-                                        matrix))
-      with open(file_location_and_name, 'w') as matrix_write:
-        json.dump(matrices[matrix], matrix_write)
+    with (database_transaction(db_connection
+          .connect_to_database(database_name))) as session:
+      for matrix in matrices:
+        file_location_and_name = ('{}/{}_{}_{}.asc'
+                                  .format(args.output_directory,
+                                          instance_id,
+                                          module_name,
+                                          matrix))
+        session.add(GeneratedFile(file_name=file_location_and_name,
+                                  job_id=instance_id))
+        with open(file_location_and_name, 'w') as matrix_write:
+          json.dump(matrices[matrix], matrix_write)
     sys.exit(0)
   except Exception as e:
     print(e)
