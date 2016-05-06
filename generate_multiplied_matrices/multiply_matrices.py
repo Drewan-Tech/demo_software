@@ -10,12 +10,12 @@ def run(output_directory):
   import json
   from matrix_functions import multiply as multiply_matrices
   import os
-  from demo_infrastructure.demo_database import (db_connection,
-                                                 database_name,
-                                                 Job,
-                                                 GeneratedFile,
-                                                 OperatingOn,
-                                                 JobStatus)
+  from demo_software.infrastructure.demo_database import (db_connection,
+                                                          database_name,
+                                                          Job,
+                                                          GeneratedFile,
+                                                          OperatingOn,
+                                                          JobStatus)
   from drewantech_common.database_operations import database_transaction
   valid_directory(output_directory)
   instance_id = generate_32_character_random_string()

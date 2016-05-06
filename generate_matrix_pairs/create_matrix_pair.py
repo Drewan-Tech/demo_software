@@ -46,11 +46,11 @@ def run(a_rows_b_columns,
   from drewantech_common.string_generator \
       import generate_32_character_random_string
   import os
-  from demo_infrastructure.demo_database import (db_connection,
-                                                 database_name,
-                                                 Job,
-                                                 GeneratedFile,
-                                                 JobStatus)
+  from demo_software.infrastructure.demo_database import (db_connection,
+                                                          database_name,
+                                                          Job,
+                                                          GeneratedFile,
+                                                          JobStatus)
   from drewantech_common.database_operations import database_transaction
   valid_directory(output_directory)
   if type(a_rows_b_columns) is not int:
