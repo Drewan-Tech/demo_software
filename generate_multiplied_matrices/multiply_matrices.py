@@ -14,7 +14,8 @@ def run(output_directory):
                                                  database_name,
                                                  Job,
                                                  GeneratedFile,
-                                                 OperatingOn)
+                                                 OperatingOn,
+                                                 JobStatus)
   from drewantech_common.database_operations import database_transaction
   valid_directory(output_directory)
   instance_id = generate_32_character_random_string()
@@ -38,7 +39,8 @@ def run(output_directory):
       if canidate_job:
         canidate_jobs.append(potential_job)
     if not canidate_jobs:
-      print('No jobs need matrix multiplication.')
+      session.add(JobStatus(job_id=instance_id,
+                            status='No jobs need matrix multiplication.'))
       job = session.query(Job).filter_by(id=instance_id).one()
       job.is_finished = True
     else:
@@ -54,23 +56,34 @@ def run(output_directory):
           if 'Matrix_B' in row.file_name:
             matrix_files['Matrix_B'] = row.file_name
           else:
-            raise ValueError('Unrecognized file name, {}, cannot process.'
-                             .format(row.file_name))
+            message = ('Unrecognized file name, {}, cannot process.'
+                       .format(row.file_name))
+            session.add(JobStatus(job_id=instance_id,
+                                  status=message))
+            raise ValueError(message)
       if not matrix_files:
-        print('No files found for job {}.'.format(job_to_work))
-        job = session.query(Job).filter_by(id=instance_id).one()
-        job.is_finished = True
-    for job in canidate_jobs:
-      print(job.id)
+        message = ('No files found for job {}.'.format(job_to_work))
+        session.add(JobStatus(job_id=instance_id,
+                              status=message))
+        raise ValueError(message)
   if matrix_files:
     for matrix_type in matrix_files:
-      print(matrix_files[matrix_type])
       if type(matrix_files[matrix_type]) is not str:
-        raise ValueError('The type of the file name, {}, is not a str.'
-                         .format(matrix_files[matrix_type]))
+        message = ('The type of the file name, {}, is not a str.'
+                   .format(matrix_files[matrix_type]))
+        with (database_transaction(db_connection
+              .connect_to_database(database_name))) as session:
+          session.add(JobStatus(job_id=instance_id,
+                                status=message))
+        raise TypeError(message)
       if not os.path.isfile(matrix_files[matrix_type]):
-        raise OSError('The file name, {}, is not valid.'
-                      .format(matrix_files[matrix_type]))
+        message = ('The file name, {}, is not valid.'
+                   .format(matrix_files[matrix_type]))
+        with (database_transaction(db_connection
+              .connect_to_database(database_name))) as session:
+          session.add(JobStatus(job_id=instance_id,
+                                status=message))
+        raise OSError(message)
     file_location_and_name = ('{}/{}_{}_Matrix_A.asc'
                               .format(args.output_directory,
                                       instance_id,
@@ -87,6 +100,9 @@ def run(output_directory):
       job.is_finished = True
       session.add(GeneratedFile(file_name=file_location_and_name,
                                 job_id=instance_id))
+      message = ('Successfully multiplied matrices.')
+      session.add(JobStatus(job_id=instance_id,
+                            status=message))
 
 
 if __name__ == '__main__':

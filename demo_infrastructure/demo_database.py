@@ -48,7 +48,8 @@ class Job(Base):
   id = Column(String(32), primary_key=True)
   producer = Column(String)
   is_finished = Column(Boolean)
-  generated_files = relationship('GeneratedFile', back_populates='job')
+  generated_files = relationship('GeneratedFile', back_populates='job_file')
+  statuses = relationship('JobStatus', back_populates='job_status')
   operators = relationship('OperatingOn',
                            foreign_keys=[OperatingOn.operator_id],
                            back_populates='operator')
@@ -61,7 +62,14 @@ class GeneratedFile(Base):
   __tablename__ = 'generated_file'
   file_name = Column(String, primary_key=True)
   job_id = Column(String(32), ForeignKey('job.id'))
-  job = relationship('Job', back_populates='generated_files')
+  job_file = relationship('Job', back_populates='generated_files')
+
+
+class JobStatus(Base):
+  __tablename__ = 'job_status'
+  job_id = Column(String(32), ForeignKey('job.id'), primary_key=True)
+  status = Column(String)
+  job_status = relationship('Job', back_populates='statuses')
 
 
 def create_database():

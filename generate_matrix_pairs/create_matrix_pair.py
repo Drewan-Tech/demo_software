@@ -16,17 +16,17 @@ def generate_pair_of_matrices(a_rows_b_columns,
   from create_random_matrix import create_matrix
   from drewantech_common.value_checks import is_number_type_not_complex
   if type(a_rows_b_columns) is not int:
-    raise ValueError('The type of the arg to set the matrix A rows and '
-                     'matrix B columns in generate_pair_of_matrices function '
-                     'is not an int type.')
+    raise TypeError('The type of the arg to set the matrix A rows and '
+                    'matrix B columns in generate_pair_of_matrices function '
+                    'is not an int type.')
   if type(a_columns_b_rows) is not int:
-    raise ValueError('The type of the arg to set the matrix A columns and '
-                     'matrix B rows in generate_pair_of_matrices function '
-                     'is not an int type.')
+    raise TypeError('The type of the arg to set the matrix A columns and '
+                    'matrix B rows in generate_pair_of_matrices function '
+                    'is not an int type.')
   if not is_number_type_not_complex(max_matrix_value):
-    raise ValueError('The max matrix value arg passed to the '
-                     'generate_pair_of_matrices function is not an int or '
-                     'float type.')
+    raise TypeError('The max matrix value arg passed to the '
+                    'generate_pair_of_matrices function is not an int or '
+                    'float type.')
   matrix_a = create_matrix(a_rows_b_columns,
                            a_columns_b_rows,
                            max_matrix_value)
@@ -36,20 +36,74 @@ def generate_pair_of_matrices(a_rows_b_columns,
   return matrix_a, matrix_b
 
 
+def run(a_rows_b_columns,
+        a_columns_b_rows,
+        random_values_max_range,
+        output_directory):
+  from drewantech_common.value_checks import (valid_directory,
+                                              is_number_type_not_complex)
+  import json
+  from drewantech_common.string_generator \
+      import generate_32_character_random_string
+  import os
+  from demo_infrastructure.demo_database import (db_connection,
+                                                 database_name,
+                                                 Job,
+                                                 GeneratedFile,
+                                                 JobStatus)
+  from drewantech_common.database_operations import database_transaction
+  valid_directory(output_directory)
+  if type(a_rows_b_columns) is not int:
+    raise TypeError('Type of arg a_rows_b_columns passed to '
+                    'create_matrix_pair.run function is not int.')
+  if type(a_columns_b_rows) is not int:
+    raise TypeError('Type of arg a_columns_b_rows passed to '
+                    'create_matrix_pair.run function is not int.')
+  if not is_number_type_not_complex(random_values_max_range):
+    raise TypeError('Type of arg random_values_max_range passed to '
+                    'create_matrix_pair.run function is not int or float.')
+  instance_id = generate_32_character_random_string()
+  module_name = (os.path.basename(__file__).rstrip('.py'))
+  with (database_transaction(db_connection
+        .connect_to_database(database_name))) as session:
+    session.add(Job(id=instance_id, producer=module_name, is_finished=False))
+  matrices = {}
+  try:
+    matrix_a, matrix_b = generate_pair_of_matrices(a_rows_b_columns,
+                                                   a_columns_b_rows,
+                                                   random_values_max_range)
+    matrices = {'Matrix_A': matrix_a,
+                'Matrix_B': matrix_b}
+  except Exception as e:
+    with (database_transaction(db_connection
+          .connect_to_database(database_name))) as session:
+      session.add(JobStatus(job_id=instance_id, status=e))
+    raise e
+  with (database_transaction(db_connection
+        .connect_to_database(database_name))) as session:
+    for matrix in matrices:
+      file_location_and_name = ('{}/{}_{}_{}.asc'
+                                .format(output_directory,
+                                        instance_id,
+                                        module_name,
+                                        matrix))
+      session.add(GeneratedFile(file_name=file_location_and_name,
+                                job_id=instance_id))
+      with open(file_location_and_name, 'w') as matrix_write:
+        json.dump(matrices[matrix], matrix_write)
+  with (database_transaction(db_connection
+        .connect_to_database(database_name))) as session:
+    job = session.query(Job).filter_by(id=instance_id).one()
+    job.is_finished = True
+    session.add(JobStatus(job_id=instance_id,
+                          status='Successfully created a pair of matrices.'))
+
+
 if __name__ == '__main__':
   import sys
   try:
     import argparse
-    import json
     from drewantech_common.value_checks import valid_directory
-    from drewantech_common.string_generator \
-        import generate_32_character_random_string
-    import os
-    from demo_infrastructure.demo_database import (db_connection,
-                                                   database_name,
-                                                   Job,
-                                                   GeneratedFile)
-    from drewantech_common.database_operations import database_transaction
     parser = argparse.ArgumentParser(description='Generates two matrices of '
                                                  'random values with the size '
                                                  'provided. The row size of '
@@ -77,35 +131,10 @@ if __name__ == '__main__':
                         type=valid_directory,
                         help='Directory to write the two output matrix files.')
     args = parser.parse_args()
-    instance_id = generate_32_character_random_string()
-    module_name = (os.path.basename(__file__).rstrip('.py'))
-    with (database_transaction(db_connection
-          .connect_to_database(database_name))) as session:
-      session.add(Job(id=instance_id, producer=module_name, is_finished=False))
-    matrix_a, matrix_b = generate_pair_of_matrices(args
-                                                   .a_rows_b_columns,
-                                                   args
-                                                   .a_columns_b_rows,
-                                                   args
-                                                   .random_values_max_range)
-    matrices = {'Matrix_A': matrix_a,
-                'Matrix_B': matrix_b}
-    with (database_transaction(db_connection
-          .connect_to_database(database_name))) as session:
-      for matrix in matrices:
-        file_location_and_name = ('{}/{}_{}_{}.asc'
-                                  .format(args.output_directory,
-                                          instance_id,
-                                          module_name,
-                                          matrix))
-        session.add(GeneratedFile(file_name=file_location_and_name,
-                                  job_id=instance_id))
-        with open(file_location_and_name, 'w') as matrix_write:
-          json.dump(matrices[matrix], matrix_write)
-    with (database_transaction(db_connection
-          .connect_to_database(database_name))) as session:
-      job = session.query(Job).filter_by(id=instance_id).one()
-      job.is_finished = True
+    run(args.a_rows_b_columns,
+        args.a_columns_b_rows,
+        args.random_values_max_range,
+        args.output_directory)
     sys.exit(0)
   except Exception as e:
     print(e)
