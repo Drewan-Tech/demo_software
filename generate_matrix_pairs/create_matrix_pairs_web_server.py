@@ -51,10 +51,20 @@ def index():
 def matrix_pair(A_rows_B_columns,
                 B_rows_A_columns,
                 max_random_value):
-  flash('Generating matrix pair.')
-  return render_template('matrix_pair.html',
-                         A_rows_B_columns=A_rows_B_columns,
-                         B_rows_A_columns=B_rows_A_columns,
-                         max_random_value=max_random_value,
-                         output_location=('/home/benton/drewan_tech'
-                                          '/demo_output/'))
+  from create_matrix_pair import run
+  try:
+    run(a_rows_b_columns=A_rows_B_columns,
+        a_columns_b_rows=B_rows_A_columns,
+        random_values_max_range=max_random_value,
+        output_directory=('/home/benton/drewan_tech/demo_output/'))
+    flash('A pair of matrices were generated for: '
+          'A_rows_B_columns = {}, '
+          'B_rows_A_columns = {}, '
+          'max_random_value = {}'
+          .format(A_rows_B_columns,
+                  B_rows_A_columns,
+                  max_random_value))
+    return redirect(url_for('index'))
+  except Exception as e:
+    flash(e)
+    return redirect(url_for('index'))
