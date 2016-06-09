@@ -1,0 +1,17 @@
+{% extends "main.html" %}
+{% block content %}
+ <div>
+   <h1>Create a Pair of Random Matrices</h1>
+ </div>
+ <div>
+   <form action="" method="post">
+     Number of rows in matrix A and columns in matrix B:
+     <input type="text" name="A_rows_B_columns"><br>
+     Number of rows in matrix B and columns in matrix A:
+     <input type="text" name="B_rows_A_columns"><br>
+     Maximum value for random numbers:
+     <input type="text" name="max_random_value"><br>
+     <input type="submit" name="Submit">
+   </form>
+ </div>
+{% endblock %}
