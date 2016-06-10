@@ -51,12 +51,12 @@ def index():
 def matrix_pair(A_rows_B_columns,
                 B_rows_A_columns,
                 max_random_value):
-  from create_matrix_pair import run
+  from create_matrix_pair import run as create_run
   try:
-    run(a_rows_b_columns=A_rows_B_columns,
-        a_columns_b_rows=B_rows_A_columns,
-        random_values_max_range=max_random_value,
-        output_directory=('/home/benton/drewan_tech/demo_output/'))
+    create_run(a_rows_b_columns=A_rows_B_columns,
+               a_columns_b_rows=B_rows_A_columns,
+               random_values_max_range=max_random_value,
+               output_directory=('/home/benton/drewan_tech/demo_output/'))
     flash('A pair of matrices were generated for: '
           'A_rows_B_columns = {}, '
           'B_rows_A_columns = {}, '

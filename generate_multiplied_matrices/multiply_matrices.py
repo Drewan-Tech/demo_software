@@ -85,7 +85,7 @@ def run(output_directory):
                                 status=message))
         raise OSError(message)
     file_location_and_name = ('{}/{}_{}_Matrix_A.asc'
-                              .format(args.output_directory,
+                              .format(output_directory,
                                       instance_id,
                                       module_name))
     with open(matrix_files['Matrix_A'], 'r') as matrix_A_file:
